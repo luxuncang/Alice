@@ -31,18 +31,6 @@ class GithubParse:
         except Exception as e:
             print(e)
             return f'用户 {username} 不存在'
-        # f"仓库: {u.get_repos(type='public')}"
-        # f"仓库: {u.get_repos(type='private')}"
-        # f"仓库: {u.get_repos(type='member')}"
-        # f"仓库: {u.get_repos(type='all')}"
-        # f"仓库: {u.get_repos(type='sources')}"
-        # f"仓库: {u.get_repos(type='forks')}"
-        # f"仓库: {u.get_repos(type='mirrors')}"
-        # f"仓库: {u.get_repos(type='archived')}"
-        # f"仓库: {u.get_repos(type='disabled')}"
-        # f"仓库: {u.get_repos(type='mirror')}"
-        # f"仓库: {u.get_repos(type='template')}"
-        # f"仓库: {u.get_repos(type='inactive')}"
 
     @classmethod
     def get_repo(cls, repo, obj: bool = False):
@@ -93,17 +81,6 @@ class GithubParse:
         if obj_name:
             return funclist
         return '\n'.join([f"命令: {i}\n文档: {inspect.getdoc(getattr(obj, i))}\n" for i in funclist])
-
-    @classmethod
-    def get_help(cls):
-        res = '''
-        命令:
-        user: 用户
-        org: 组织
-        repo: 仓库
-        commit: 提交
-        issue: 提案
-        '''
 
     @classmethod
     def user(cls, parse: list):
