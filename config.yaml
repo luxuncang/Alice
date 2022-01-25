@@ -1,0 +1,17 @@
+Alice: Ariadne
+
+BotSession:
+    host: http://localhost:8080 # host of the bot
+    account: 000000001 # account of the bot
+    verify_key: 123456789 # verify key of the bot
+
+ApiKey: 
+    Baidu:
+        APIKEY: xxxxxxxxxxxx # Baidu API key
+        SECRETKEY: xxxxxxxxxxxx # Baidu API secret key
+
+SSH:
+    host: xxx.xxx.xxx.xxx # host of the linux ssh
+    port: 22 # port of the linux ssh
+    username: root # username of the linux ssh
+    password: xxxxxxxxxxxx # password of the linux ssh

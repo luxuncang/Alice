@@ -1,0 +1,1 @@
+from .human_play import AlphaZero
