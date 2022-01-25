@@ -10,7 +10,7 @@
     <h3>新一代基于 Graia 生态的动态机器人终端</h3>
     <div>ALICE·SYNTHESIS·THIRTY之名取自动漫《刀剑神域》中的角色 <a href="https://zh.moegirl.org.cn/%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E6%BB%8B%E8%B4%9D%E9%B2%81%E5%BA%93">爱丽丝·滋贝鲁库</a></div>
     <br>
-    <div>若您在使用过程中发现了**bug**或有一些建议，欢迎提出ISSUE或PR</div>
+    <div>若您在使用过程中发现了 Bug 或有一些建议，欢迎提出 ISSUE 或 PR</div>
     <br>
 </div>
 
