@@ -16,4 +16,4 @@ async def qingyunke_chat(text):
         ress = ''
         for i in res:
             ress +=i.strip()+'\n'
-        return ress.rstrip('\n').replace('菲菲','墨墨')
+        return ress.rstrip('\n').replace('菲菲','Alice')
