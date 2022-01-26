@@ -405,7 +405,7 @@ class SSHEvent(AliceEvent, AsyncAdapterEvent):
                             n = n1
                         await asyncio.sleep(1)
                 await session.send(MessageChain.create([Plain('正在连接...')]))
-                async with asyncssh.connect('159.75.108.169', username='ubuntu', password='Luxuncang123') as conn:
+                async with asyncssh.connect(**config['SSH']) as conn:
                     async with conn.create_process(stderr=asyncssh.STDOUT) as process:
                         session.on(sendssh)
                         session.on(onssh, process)
