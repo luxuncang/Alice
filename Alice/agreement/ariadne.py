@@ -1,4 +1,3 @@
-from os import name
 from typing import Optional, Union, Iterable, List, Dict, BinaryIO
 from SimilarNeuron import BaseSwitch, Agreement
 from ..internaltype import (

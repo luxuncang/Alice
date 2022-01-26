@@ -9,6 +9,8 @@ ApiKey:
     Baidu:
         APIKEY: xxxxxxxxxxxx # Baidu API key
         SECRETKEY: xxxxxxxxxxxx # Baidu API secret key
+    Github:
+        Token: xxxxxxxxxxxx # Github API token
 
 SSH:
     host: xxx.xxx.xxx.xxx # host of the linux ssh

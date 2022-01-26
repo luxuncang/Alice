@@ -1,12 +1,12 @@
-# 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
 import inspect
+import requests
 from typing import Callable, Iterable
 from github import Github
-from pprint import pprint
-import requests
+
+from ...internaltype import config
 
 class GithubParse:
-    g = Github("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")
+    g = Github(config['Github']['token'])
 
     @classmethod
     def get_user(cls, username, obj: bool = False):

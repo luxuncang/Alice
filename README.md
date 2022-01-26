@@ -67,7 +67,10 @@
 | Alice                 | Graia for mirai 内核         |
 | BotSession.host       | mirai-api-http host          |
 | BotSession.account    | bot 账户                     |
-| BotSession.verify_key | mirai-api-http 的 verify_key |
+| BotSession.verify_key | mirai-api-http 的 verify_key 
+| ApiKey.Baidu.APIKEY    | 百度应用 APIKey          |
+| ApiKey.Baidu.SECRETKEY | 百度应用 SecretKey       |
+| ApiKey.Github.Token  | Github Token           |
 | SSH.host              | SSH IP地址                   |
 | SSH.port              | SSH 端口                     |
 | SSH.username          | SSH 登录用户名               |
