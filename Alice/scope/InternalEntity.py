@@ -151,7 +151,11 @@ class AliceSession:
 
         AliceSession.session.add(self, self.timeout)
 
+        t = 0
+
         while True:
+            if t >= self.timeout:
+                return None
             if AliceSession.callbake.get(self):
                 self.call = AliceSession.callbake.pop(self)
                 if self.call == AliceSessionStop:
