@@ -32,7 +32,7 @@ class ParamikoClient:
         self.ssh = paramiko.SSHClient()
         self.ssh._transport = trans
 
-        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
         self.channel = self.ssh.invoke_shell()
         self.t = threading.Thread(target=self.channel_recv)
         self.t.start()
