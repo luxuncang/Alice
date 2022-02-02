@@ -16,6 +16,7 @@ from ..internaltype import (
     Friend,
     GraiaMiraiApplication
 )
+from ..api import Render
 from ..parse import AliceParse, ParseRusult
 from .ExternalEntity import Context, GraiaBot, GraiaGroup, GraiaUser, GraiaEvent,MiraiBot
 from ..agreement import DictToMessageChain
@@ -61,6 +62,7 @@ class AliceSendMessage:
 
     @staticmethod
     async def send(context: Context, message: MessageChain, app: GraiaMiraiApplication, source: Source = None):
+        message = await AliceSendMessage.safe(message)
         if context.group:
             res = await app.sendGroupMessage(int(context.group), message, quote = source)
         else:
@@ -68,6 +70,20 @@ class AliceSendMessage:
         if context.group:
             AliceSendMessage.sendid.add((context.group, res.messageId))
         return res
+    
+    @staticmethod
+    async def safe(message: MessageChain) -> MessageChain:
+        '''
+        安全消息
+        '''
+        m = message.get(Plain)
+        text = ''
+        for i in m:
+            text += i.text
+        if len(text) >= 5000:
+            message = message.exclude(Plain)
+            message.append(Image(data_bytes = await Render.render(text)))
+        return message
 
 # 新式会话
 class AliceSession:
