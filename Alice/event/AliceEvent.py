@@ -548,7 +548,7 @@ class AliceStatusWindow(AliceEvent, AsyncAdapterEvent):
     __eventname__ = '史提西亚之窗'
 
     __help__ = '''Help:
-    command: `史提西亚之窗`
+    command: `史提西亚之窗 -> [system call] <command>`
     description: 开启史提西亚之窗'''
 
     async def funcevents(
@@ -557,7 +557,6 @@ class AliceStatusWindow(AliceEvent, AsyncAdapterEvent):
         context: Context,
         EventChain: AliceEventChain,
     ):
-        # builtins.update(locals())
         builtins.update(globals())
         async def asend():
             async with AliceSession(AliceParse([r'([\s\S]*)']), context, EventChain, 600) as session:
@@ -565,7 +564,11 @@ class AliceStatusWindow(AliceEvent, AsyncAdapterEvent):
                 while True:
                     call = await session.wait()
                     if call:
-                        res = await Thread(target = eval, args = (call.parserults.re, builtins)).start()
+                        text = call.parserults.re.split('\n')
+                        if text[0] == 'system call':
+                            res = await Thread(target=exec, args=('\n'.join(text[1:]), builtins)).start()
+                        else:
+                            res = await Thread(target = eval, args = (call.parserults.re, builtins)).start()
                         res = await Render.render(str(res))
                         await session.send(MessageChain.create([Image(data_bytes = res)]))
                     else:
