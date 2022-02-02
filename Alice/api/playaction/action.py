@@ -1,8 +1,6 @@
 import asyncio
 import json
 import os
-import inspect
-# import textwrap
 from playwright.async_api import Playwright, async_playwright
 from lxml import etree
 
@@ -34,8 +32,6 @@ class Render:
             await Render.page.goto("file:///" + os.path.split(__file__)[0] + "/Render/index.html")
             while True:
                 await asyncio.sleep(100)
-            # await page.evaluate_handle(f'document.getElementById("pretext").innerText = `{text}`;')
-            # await page.locator('.card').screenshot(**{'path': 'test.jpeg'})
 
     @classmethod
     async def close(cls):
@@ -94,8 +90,9 @@ class ActionLocatorScreenshot(Action):
 
 class ActionScreenshot(Action):
     '''截图类'''
-    def __init__(self, path):
+    def __init__(self, path, full: bool = False) -> None:
         self.path = path
+        self.full = full
 
 class ActionFill(Action):
     '''填充类'''
@@ -116,6 +113,12 @@ class ActionEvaluate(Action):
         self.script = script
         self.wait = wait
 
+class ActionMouse(Action):
+    '''鼠标类'''
+    def __init__(self, x, y, wait: float = 0):
+        self.x = x
+        self.y = y
+        self.wait = wait
 
 # 元素类
 class ElementHtml(Element):
@@ -135,6 +138,11 @@ class ElementRequest(Element):
 
 class ElementResponse(Element):
     '''response类'''
+    def __init__(self, n: int):
+        self.n = n
+
+class ElementConsole(Element):
+    '''console类'''
     def __init__(self, n: int):
         self.n = n
 
@@ -166,21 +174,23 @@ async def get_elements_all(page, selector):
 
 class PlayExec:
     class Network:
-        request = []
-        response = []
+        ...
 
     def __init__(self, playwright) -> None:
         self.playwright = playwright
         self.browser = None
         self.context = None
         self.page = None
+        self.Network.request = []
+        self.Network.response = []
+        self.Network.console = []
 
     async def __aenter__(self):
         self.browser = await self.playwright.chromium.launch(headless=True, downloads_path='./downloads')
         self.context = await self.browser.new_context(accept_downloads=True, locale='zh-CN')
         self.context.on("page", self.handle_page)
         self.page = await self.context.new_page()
-        self.network(self.page)
+        self.network()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -198,8 +208,10 @@ class PlayExec:
         elif isinstance(action, ActionLocator):
             await self.page.click(action.selector)
         elif isinstance(action, ActionScreenshot):
-            if  action.path:
-                await self.page.screenshot(action.path)
+            if action.path:
+                return {'Image': await self.page.screenshot(action.path, full_page = action.full)}
+            else:
+                return {'Image': await self.page.screenshot(full_page = action.full)}
         elif isinstance(action, ActionFill):
             await self.page.fill(action.selector, action.text)
         elif isinstance(action, ActionPress):
@@ -208,92 +220,102 @@ class PlayExec:
         elif isinstance(action, ActionEvaluate):
             await self.page.evaluate(action.script)
         elif isinstance(action, ActionLocatorScreenshot):
-            print(action.selector)
             if action.path:
                 return {'Image': await self.page.locator(action.selector).screenshot(action.path)}
             else:
                return {'Image': await self.page.locator(action.selector).screenshot()}
+        elif isinstance(action, ActionMouse):
+            if action.x == 0 and action.y == 0:
+                action.y = self.page.viewport_size['height']
+            await self.page.mouse.wheel(action.x, action.y)
+            await asyncio.sleep(action.wait)
         elif isinstance(action, ElementRequest):
             return {
                 'Image': await Render.render(
                     json.dumps(
-                        PlayExec.Network.request[-action.n:], 
+                        self.Network.request[-action.n:], 
                         ensure_ascii = False, 
                         indent = 4
                     )
                 )
             }
-            # return {'Plain': json.dumps(PlayExec.Network.request[-action.n:], ensure_ascii=False, indent=4)}
         elif isinstance(action, ElementResponse):
             return {
                 'Image': await Render.render(
                     json.dumps(
-                        PlayExec.Network.response[-action.n:], 
+                        self.Network.response[-action.n:], 
                         ensure_ascii = False, 
                         indent = 4
                     )
                 )
             }
-            # return {'Plain': json.dumps(PlayExec.Network.response[-action.n:], ensure_ascii=False, indent=4)}
+        elif isinstance(action, ElementConsole):
+            return {
+                'Image': await Render.render(
+                    '\n'.join(self.Network.console[-action.n:])
+                )
+            }
+
         elif isinstance(action, ElementHtml):
             return {
                 'Image': await Render.render(
                     await self.page.inner_html(action.selector)
                 )
             }
-            # return {'Plain': await self.page.inner_html(action.selector)}
         elif isinstance(action, ElementText):
             return {
                 'Image': await Render.render(
                     await self.page.inner_text(action.selector)
                 )
             }
-            # return {'Plain': await self.page.inner_text(action.selector)}
         elif isinstance(action, ElementXpath):
             return {
                 'Image': await Render.render(
                     await get_elements_all(self.page, action.selector)
                 )
             }
-            # return {'Plain': await self.page.xpath(action.selector)}
         elif isinstance(action, ElementDownload):
             async with self.page.expect_download() as download_info:
                 await self.page.click(action.selector)
             download = await download_info.value
-            return {'file': (open(await download.path(), 'rb'), download.suggested_filename),'Plain': '下载中...'}
+            return {'file': (open(await download.path(), 'rb'), download.suggested_filename),'Plain': '上传中...'}
         elif isinstance(action, ElementPdf):
             return {
                 'file': (
                     await self.page.pdf(
-                        width = action.width or "11.7in", 
-                        height = action.height or "8.27in", 
+                        width = action.width or "8.27in", 
+                        height = action.height or "11.7in", 
                         print_background = True
                     ),
-                    f'{await self.page.title()}.pdf'
-                )
+                    f'{self.page.url}.pdf'
+                ),
+                'Plain': '上传中...'
             }
         else:
             raise Exception('Unknown action')
         await asyncio.sleep(1)
-        # await self.page.screenshot(**{'path': f'./{time.time()}.png'})
         return {'Image': await self.page.screenshot()}
 
     async def handle_page(self, page):
         self.page = page
         await page.wait_for_load_state()
 
-    @staticmethod
-    def network(page):
-        page.on("request", PlayExec.play_request)
-        page.on("response", PlayExec.play_response)
+    def network(self):
+        self.page.on("request", self.play_request)
+        self.page.on("response", self.play_response)
+        self.page.on("console", self.play_console)
 
-    @staticmethod
-    def play_request(request) -> None:
-        PlayExec.Network.request.append({'method': request.method, 'url': request.url, 'headers': request.headers})
+    async def play_console(self, msg):
+        values = []
+        for arg in msg.args:
+            values.append(str(await arg.json_value()))
+        self.Network.console.append(''.join(values))
 
-    @staticmethod
-    def play_response(response) -> None:
-        PlayExec.Network.response.append({'status': response.status, 'url': response.url, 'headers': response.headers, 'body': response.body})
+    def play_request(self, request) -> None:
+        self.Network.request.append({'method': request.method, 'url': request.url, 'headers': request.headers})
+
+    def play_response(self, response) -> None:
+        self.Network.response.append({'status': response.status, 'url': response.url, 'headers': response.headers, 'body': response.body})
 
 class MyList(list):
 
@@ -325,9 +347,15 @@ class strtoAction:
         elif s[0] == 'evaluate':
             s = MyList(strtoAction.get_commend(s, '-m', '-t'))
             return ActionEvaluate(s[1], int(s.get(2) or 0))
+        elif s[0] == 'mouse':
+            s = MyList(strtoAction.get_commend(s, '-y', '-x', '-t'))
+            return ActionMouse(int(s.get(2) or 0), int(s.get(1) or 0), int(s.get(3) or 0))
         elif s[0] in ('screenshot', 'sc'):
             s = MyList(strtoAction.get_commend(s, '-p'))
             return ActionScreenshot(s.get(1))
+        elif s[0] in ('fsc', 'full-screenshot'):
+            s = MyList(strtoAction.get_commend(s, '-p'))
+            return ActionScreenshot(s.get(1), True)
         elif s[0] in ('locatorscreenshot', 'lsc'):
             s = MyList(strtoAction.get_commend(s, '-s', '-p'))
             return ActionLocatorScreenshot(s[1], s.get(2))
@@ -337,6 +365,9 @@ class strtoAction:
         elif s[0] in ('response', 'rep'):
             s = MyList(strtoAction.get_commend(s, '-n'))
             return ElementResponse(int(s[1]))
+        elif s[0] in ('console', 'con'):
+            s = MyList(strtoAction.get_commend(s, '-n'))
+            return ElementConsole(int(s[1]))
         elif s[0] == 'html':
             s = MyList(strtoAction.get_commend(s, '-s'))
             return ElementHtml(s[1])

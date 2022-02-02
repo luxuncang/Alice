@@ -505,11 +505,14 @@ class PlaywrightEvent(AliceEvent, AsyncAdapterEvent):
     点击: click -s <元素选择器> -t <超时>
     输入: fill -s <元素选择器> -w <值>
     键盘: press -s <元素选择器> -k <键值> -t <超时>
+    滚轮: move -y <Y轴> -x <X轴> -t <超时>
     js注入: evaluate -m <js代码> -t <超时>
     截图: [screenshot | sc] -p <保存路径>
+    全截图: [fullscreenshot | fsc] -p <保存路径>
     元素截图: [locatorscreenshot | lsc] -s <元素选择器> -p <保存路径>
     请求: [resqest | req] -n <返回数量>
     响应: [response | rep] -n <返回数量>
+    控制台: [console | con] -n <返回数量>
     元素源代码: html -s <元素选择器>
     元素文本: text -s <元素选择器>
     元素xpath: xpath -s <元素选择器>
