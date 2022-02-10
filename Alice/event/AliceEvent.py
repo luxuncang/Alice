@@ -667,7 +667,7 @@ class RemindEvent(AliceEvent, AsyncAdapterEvent):
                     await session.send(MessageChain.create([Plain('提醒格式错误')]))
                     return False
                 elif text[0] == '-d':
-                    res = time_completion(' '.join(text[1:-1]))
+                    res = time_completion(' '.join(text[1:]))
                     if isinstance(res, str):
                         await session.send(MessageChain.create([Plain(res)]))
                         return res
@@ -676,7 +676,7 @@ class RemindEvent(AliceEvent, AsyncAdapterEvent):
                         await session.send(MessageChain.create([Plain(res)]))
                         return res
                     await session.send(MessageChain.create([Plain('还有{}天{}小时{}分钟{}秒 提醒!'.format(res.days, res.seconds//3600, res.seconds%3600//60, res.seconds%60))]))
-                    await asyncio.sleep(res.seconds)
+                    await asyncio.sleep(res.seconds + res.days * 24 * 3600)
                     await session.send(MessageChain.create([Plain(text[-1])]))
                 elif text[0] == '-w':
                     if len(text[1:-1]) == 1:
@@ -693,7 +693,7 @@ class RemindEvent(AliceEvent, AsyncAdapterEvent):
                         else:
                             await session.send(MessageChain.create([Plain('提醒格式错误')]))
                             return False
-                        await asyncio.sleep(date.second)
+                        await asyncio.sleep(res.seconds + res.days * 24 * 3600)
                         await session.send(MessageChain.create([Plain(text[-1])]))                    
         return [remind]
         
