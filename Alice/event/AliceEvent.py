@@ -22,7 +22,7 @@ from ..internaltype import (
     Source,
     config
 )
-from ..utils import Thread
+from ..utils import Thread, batch_forwardnode
 from ..scope import (
     MiraiBot,
     AliceBuiltins,
@@ -35,28 +35,7 @@ from ..scope import (
 
     )
 from ..parse import AliceParse, ParseRusult, ElementMatch, ParseMatch, ArgumentMatch, time_completion
-from ..api import (
-    qingyunke_chat,
-    oneYan, 
-    getBaike, 
-    translation,
-    AlphaZero, 
-    getwiki,
-    getBlog, 
-    getMusic,
-    cloudmusic,
-    getImage_seovx,
-    PlayExec, 
-    Render,
-    baidu_ORC,
-    strtoAction,
-    ParamikoClient,
-    GithubParse,
-    runCode,
-    Language,
-    ftp,
-    ftp_file
-)
+from ..api import *
 import asyncssh, asyncio, inspect, os
 from datetime import datetime
 from functools import lru_cache
@@ -789,6 +768,45 @@ class FtpEvent(AliceEvent, AsyncAdapterEvent):
     
         async def callback(self):
             ...                            
+
+class BilibiliEvent(AliceEvent, AsyncAdapterEvent):
+
+    __ParseMapper__ = AliceParse(
+        command = [ParseMatch('bili{command:>}')],
+        least = [([ParseMatch('bili -s{text:>}'), ParseMatch('bili -d{url:>}')], 1)],
+        )
+
+    __eventname__ = 'bili'
+
+    __help__ = '''Help:
+    command: `bili [-s, -d] {command}`
+    description: bilibili 查询, 下载
+    '''
+
+    async def funcevents(
+        self,
+        message: ParseRusult,
+        app: GraiaMiraiApplication,
+        context: Context,
+        EventChain: AliceEventChain,
+        ):
+
+        async def search():
+            async with AliceSession(AliceParse([r'([\s\S]*)']), context, EventChain, 600) as session:
+                if getattr(message, 'text'):
+                    res = await bil_search(message.text)
+                    messages = [MessageChain.create(Plain(f"aid: {i[0]}\nbvid: {i[1]}\ntag: {i[3]}\nauthor: {i[4]}\ndescription: {i[5]}\nurl: {i[2]}"), Image(url = 'http:' + i[-1])) for i in res[:5]]
+                    forward = batch_forwardnode(app.account, messages, "Alice for B站")
+                    await session.send(MessageChain.create(forward), False)
+
+                elif getattr(message, 'url'):
+                    path, vid = await bil_download(message.url)
+                    await session.sendofdict({'Plain': f'上传中...', 'file': (open(path, 'rb'), f"{vid}.mp4")})
+                    os.remove(path)
+        return [search]
+
+    async def callback(self):
+        ...
 
 class RetractEvent(AliceEvent, AsyncAdapterEvent):
         

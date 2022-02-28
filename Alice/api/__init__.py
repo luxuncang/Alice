@@ -26,3 +26,4 @@ from .github import GithubParse
 from .music import cloudmusic
 from .runCode import Language, runCode
 from .ftp import ftp, ftp_file
+from .bilibili import bil_search, bil_download
