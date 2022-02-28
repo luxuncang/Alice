@@ -204,7 +204,7 @@ class Monitor:
         """
         async def context(event: AsyncAdapterEvent, parse: ParseRusult):
             """
-            内部函数，用于处理消息。
+            内部函数,用于处理消息。
             """
             locals().update(messages.context)
             locals().update(

@@ -6,6 +6,9 @@
 ---
 
 <div align="center">
+    <img src="https://www.codefactor.io/repository/github/luxuncang/Alice/badge"/>
+    <img src="https://img.shields.io/github/license/luxuncang/Alice"/>
+    <img src="https://github.com/luxuncang/Alice/workflows/CodeQL/badge.svg">
     <img src="https://img.shields.io/badge/python-3.8+-blue.svg"/>
     <h3>新一代基于 Graia 生态的动态机器人终端</h3>
     <div>ALICE·SYNTHESIS·THIRTY之名取自动漫《刀剑神域》中的角色 <a href="https://zh.moegirl.org.cn/%E7%88%B1%E4%B8%BD%E4%B8%9D%C2%B7%E6%BB%8B%E8%B4%9D%E9%B2%81%E5%BA%93">爱丽丝·滋贝鲁库</a></div>
@@ -71,6 +74,9 @@
 | ApiKey.Baidu.APIKEY    | 百度应用 APIKey          |
 | ApiKey.Baidu.SECRETKEY | 百度应用 SecretKey       |
 | ApiKey.Github.Token  | Github Token           |
+| ApiKey.Bilibili.bili_jct  | Bilibili bili_jct     |
+| ApiKey.Bilibili.sessdata  | Bilibili sessdata           |
+| ApiKey.Bilibili.buvid3  | Bilibili buvid3           |
 | SSH.host              | SSH IP地址                   |
 | SSH.port              | SSH 端口                     |
 | SSH.username          | SSH 登录用户名               |
