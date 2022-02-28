@@ -18,6 +18,7 @@ from ..internaltype import (
 )
 from ..api import Render
 from ..parse import AliceParse, ParseRusult
+from ..utils import loop_task
 from .ExternalEntity import Context, GraiaBot, GraiaGroup, GraiaUser, GraiaEvent,MiraiBot
 from ..agreement import DictToMessageChain
 from ..exception import AliceSessionStop
@@ -85,7 +86,7 @@ class AliceSendMessage:
             message.append(Image(data_bytes = await Render.render(text)))
         return message
 
-# 新式会话
+# 外部会话
 class AliceSession:
     session = TimeList(60)
     callbake = {}
@@ -100,6 +101,7 @@ class AliceSession:
         exit: AliceParse = AliceParse(['exit'])) -> None:
         self.parse = parse
         self.context = context
+        self.eventchain = EventChain
         self.call = EventChain
         self.timeout = timeout
         if loop:
@@ -146,13 +148,16 @@ class AliceSession:
                 print('session stop')
                 AliceSession.callbake[s] = AliceSessionStop
                 cls.session.put(s)
-                break
+                # break
+                return True
 
             if res:
                 print('进入新式会话')
                 AliceSession.callbake[s] = CallbackSession(messages.context, res)
                 cls.session.put(s)
-                break
+                # break
+                return True
+        return False
 
     async def wait(self, parse: AliceParse = None, context: Context = None, timeout = None) -> CallbackSession:
 
@@ -179,26 +184,29 @@ class AliceSession:
                     break
                 return self.call
             await asyncio.sleep(1)
+            t += 1
 
+    @loop_task()     
     async def send(self, message: MessageChain, sourse: bool = True):
         return await AliceSendMessage.send(
             self.context,
             message,
             self.app,
-            self.call.gettype(Source) if sourse else None
+            self.call.gettype(Source) if sourse else None,
+            self.eventchain
         )
 
-    async def sendofdict(self, message: Dict[str, Union[str, bytes, BinaryIO]]):
-        if 'file' in message:
-            self.loop.create_task(
-                self.app.uploadFile(
-                    data = message['file'][0],
-                    name = message['file'][1],
-                    target = self.GrouporFriend
-                )
+    @loop_task()
+    async def sendofdict(self, message: Dict[str, Union[str, bytes, BinaryIO]], sourse: bool = True):
+        file = message.pop('file', None)
+        res = await self.send(DictToMessageChain.transformation(message), sourse)
+        if file:
+            await self.app.uploadFile(
+                data = file[0],
+                name = file[1],
+                target = self.GrouporFriend
             )
-            del message['file']
-        return await self.send(DictToMessageChain.transformation(message))
+        return res
 
     def on(self, func: Callable, *args, **kwargs) -> None:
         self.ons.append(self.loop.create_task(func(*args, **kwargs)))
