@@ -3,11 +3,14 @@ from ..internaltype import (
     Plain
 )
 from abc import ABC, abstractmethod
-from functools import lru_cache
 from typing import Dict, Iterable, Any, Tuple, Union
 import re
 from parse import parse, compile
+from typefire import typeswitch, typefire, TypeFire
+from pydantic import create_model, BaseModel
 from ..exception import ParseException
+
+TypeFire.capture_fire()
 
 class Match(ABC):
     
@@ -80,11 +83,48 @@ class ParseMatch(Match):
     def match(self, message: str) -> Iterable[str]:
         res = self.pattern.parse(message)
         if res:
+            return res 
+
+class FireMatch(Match):
+    '''fire解析'''
+
+    def __init__(self, signature: Dict[str, tuple]) -> None:
+        self.f = self.generat_func(signature)
+
+    def match(self, message: str):
+        res = typefire(self.f)(message)
+        if res:
             return res
+        
+    def generat_func(self, signature: dict):
+        s = 'def _('
+        def hint(v):
+            if len(v) <= 1:
+                v = (..., ...)
+            h = ''
+            if v[0] == ... or v[0] == None:
+                ...
+            else:
+                h += f': {v[0] if isinstance(v[0], str) else v[0].__name__}'
+            if v[1] == ...:
+                ...
+            else:
+                h += f' = {v[1]}'
+            h += ','
+            return h
+
+        for k,v in signature.items():
+            s += k + hint(v)
+        s += '):\n    return locals()'
+        s += '\nTemp.f = _'
+        class Temp:
+            ...
+        exec(s)
+        return Temp.f
 
 class ParseRusult:
     '''解析结果'''
-    def __init__(self) -> None:
+    def __init__(self, message: MessageChain = None) -> None:
         self.command = []
         self.least = []
         self.options = []
@@ -93,6 +133,8 @@ class ParseRusult:
         self.FullMatch = []
         self.ArgumentMatch = []
         self.ParseMatch = []
+        self.FireMatch = []
+        self.message = message
 
     def __getattr__(self, name):
         if name == 'cmd':
@@ -115,7 +157,27 @@ class ParseRusult:
             for i in self.ParseMatch:
                 if name in i.named:
                     return i[name]
-        raise AttributeError(name)
+            for i in self.FireMatch:
+                if name in i:
+                    return i[name]
+        # raise AttributeError(name)
+        return None
+
+    def get_dict(self):
+        data = {}
+        for i in self.ParseMatch:
+            data.update(i.named)
+        return {
+            'cmd': self.cmd,
+            'lat': self.lat,
+            'opt': self.opt,
+            're': self.re,
+            'ele': self.ele,
+            'full': self.full,
+            'arg': self.arg,
+            'par': self.par,
+            **data
+        }
 
     @staticmethod
     def _reduction(parse_result):
@@ -171,7 +233,7 @@ class AliceParse(Match):
 
     @staticmethod
     def distribution(pattern: Match, message: MessageChain):
-        if isinstance(pattern, (RegexMatch, ParseMatch)):
+        if isinstance(pattern, (RegexMatch, ParseMatch, FireMatch)):
             return '\n'.join([i.text for i in message[Plain]])
         elif isinstance(pattern, (FullMatch, ArgumentMatch)):
             if pattern.type:
