@@ -8,7 +8,7 @@ with open(os.path.join(onfile, 'config.yaml'), encoding='utf-8') as f:
 
 from graia.broadcast import Broadcast
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.app import Ariadne as GraiaMiraiApplication
+from graia.ariadne.app import Ariadne as GraiaMiraiApplication, logger
 from graia.ariadne.model import Friend, MiraiSession as Session, Group, Member, UploadMethod
 from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.event.mirai import GroupRecallEvent, FriendRecallEvent

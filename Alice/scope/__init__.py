@@ -7,7 +7,8 @@ from .ExternalEntity import (
     AliceRelation,
     Context,
     AliceRelationship,
-    AliceBuiltins
+    AliceBuiltins,
+    BaseMonitor
 )
 from .InternalEntity import (
     AliceEventChain,

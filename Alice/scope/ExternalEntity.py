@@ -39,6 +39,10 @@ class GraiaUser(MiraiBot):
 class GraiaEvent(MiraiBot):
     ...
 
+# Monitor 元类
+class BaseMonitor(type):
+    ...
+
 # 定义权鉴依赖类型
 class Context(BaseContext):
     name: str = 'Context'

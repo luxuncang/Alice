@@ -10,13 +10,12 @@ async def event_distributor(loop: "asyncio.AbstractEventLoop", queue: "asyncio.Q
     while True:
         event = await queue.get()
         loop.create_task(Monitor.on_message(event))
-        loop.create_task(AliceSession.on_session(event))
 
 class Console(Common):
     def __init__(self, app: GraiaApp = config['Alice']):
         super().__init__(app)
         Common.loop.create_task(event_distributor(Common.loop, Common.eventqueue))
-        Common.loop.create_task(Render.start()) # 启动文本渲染器
+        Common.loop.create_task(Render.start())
         if app == GraiaApp.Application:
             Common.app.launch_blocking()
         elif app == GraiaApp.Ariadne:
