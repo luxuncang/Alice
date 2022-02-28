@@ -50,7 +50,7 @@ SQLAlchemy==1.4.29
 sqlalchemy2-stubs==0.0.2a19
 sqlmodel==0.0.6
 typing-extensions==3.10.0.2
-urllib3==1.24.3
+urllib3==1.26.5
 watchgod==0.7
 wcwidth==0.2.5
 websockets==10.1
