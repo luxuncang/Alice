@@ -59,8 +59,7 @@ class PolicyValueNet():
         
         def policy_value(state_input):
             state_input_union = np.array(state_input)
-            results = self.model.predict_on_batch(state_input_union)
-            return results
+            return self.model.predict_on_batch(state_input_union)
         self.policy_value = policy_value
         
     def policy_value_fn(self, board):
@@ -102,8 +101,7 @@ class PolicyValueNet():
         self.train_step = train_step
 
     def get_policy_param(self):
-        net_params = self.model.get_weights()        
-        return net_params
+        return self.model.get_weights()
 
     def save_model(self, model_file):
         """ save model params to file """

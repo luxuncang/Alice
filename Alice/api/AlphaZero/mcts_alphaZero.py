@@ -109,9 +109,7 @@ class MCTS(object):
         State is modified in-place, so a copy must be provided.
         """
         node = self._root
-        while(1):
-            if node.is_leaf():
-                break
+        while 1 and not node.is_leaf():
             # Greedily select next move.
             action, node = node.select(self._c_puct)
             state.do_move(action)
@@ -124,14 +122,12 @@ class MCTS(object):
         end, winner = state.game_end()
         if not end:
             node.expand(action_probs)
+        elif winner == -1:  # tie
+            leaf_value = 0.0
         else:
-            # for end state，return the "true" leaf_value
-            if winner == -1:  # tie
-                leaf_value = 0.0
-            else:
-                leaf_value = (
-                    1.0 if winner == state.get_current_player() else -1.0
-                )
+            leaf_value = (
+                1.0 if winner == state.get_current_player() else -1.0
+            )
 
         # Update value and visit count of nodes in this traversal.
         node.update_recursive(-leaf_value)
@@ -142,7 +138,7 @@ class MCTS(object):
         state: the current game state
         temp: temperature parameter in (0, 1] controls the level of exploration
         """
-        for n in range(self._n_playout):
+        for _ in range(self._n_playout):
             state_copy = copy.deepcopy(state)
             self._playout(state_copy)
 
@@ -207,12 +203,9 @@ class MCTSPlayer(object):
 #                location = board.move_to_location(move)
 #                print("AI move: %d,%d\n" % (location[0], location[1]))
 
-            if return_prob:
-                return move, move_probs
-            else:
-                return move
+            return (move, move_probs) if return_prob else move
         else:
             print("WARNING: the board is full")
 
     def __str__(self):
-        return "MCTS {}".format(self.player)
+        return f"MCTS {self.player}"

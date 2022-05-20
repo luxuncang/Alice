@@ -11,7 +11,7 @@ def time_completion(date: str):
     day = now_time.day
 
     def day_completion(date: list):
-        if not ':' in date:
+        if ':' not in date:
             return '时间格式错误!'
         if len(date.split(':')) == 3:
             date = datetime.strptime(date, '%H:%M:%S')
@@ -70,27 +70,24 @@ class Timing:
     @staticmethod
     def completion(date: str):
         now = datetime.now()
-        if ':' in date:
-            res = date.split(':')
-            if len(res) == 3:
-                d = datetime(now.year, now.month, now.day, int(res[0]), int(res[1]), int(res[2]))
-                date = d - datetime.now()
-                print(date.seconds)
-                if date.days < 0:
-                    res = d + timedelta(days=1)
-                    return True, (res - datetime.now()).seconds
-                else:
-                    return True, date.seconds
-            elif len(res) == 2:
-                d = datetime(now.year, now.month, now.day, int(res[0]), int(res[1]), 0)
-                date = d - datetime.now()
-                if date.days < 0:
-                    res = d + timedelta(days=1)
-                    return True, (res - datetime.now()).seconds
-                else:
-                    return True, date.seconds
-        else:
-            return False, sum([Timing.conversion(i) for i in date.split()])
+        if ':' not in date:
+            return False, sum(Timing.conversion(i) for i in date.split())
+        res = date.split(':')
+        if len(res) == 3:
+            d = datetime(now.year, now.month, now.day, int(res[0]), int(res[1]), int(res[2]))
+            date = d - datetime.now()
+            print(date.seconds)
+            if date.days >= 0:
+                return True, date.seconds
+            res = d + timedelta(days=1)
+            return True, (res - datetime.now()).seconds
+        elif len(res) == 2:
+            d = datetime(now.year, now.month, now.day, int(res[0]), int(res[1]), 0)
+            date = d - datetime.now()
+            if date.days >= 0:
+                return True, date.seconds
+            res = d + timedelta(days=1)
+            return True, (res - datetime.now()).seconds
 
     @classmethod
     def dispatch(cls, time):

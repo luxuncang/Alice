@@ -15,8 +15,7 @@ async def GetAccessToeken():
     header = {'Content-Type': 'application/json; charset=UTF-8'}
     async with aiohttp.request('POST', token_host, headers = header) as r:
         result = await r.json(content_type=None)
-    access_token = result.get("access_token")
-    return access_token
+    return result.get("access_token")
 
 
 '''

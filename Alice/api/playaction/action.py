@@ -29,7 +29,10 @@ class Render:
             cls.browser = await playwright.chromium.launch(headless = headless)
             cls.context = await cls.browser.new_context()
             Render.page = await cls.context.new_page()
-            await Render.page.goto("file:///" + os.path.split(__file__)[0] + "/Render/index.html")
+            await Render.page.goto(
+                f"file:///{os.path.split(__file__)[0]}/Render/index.html"
+            )
+
             while True:
                 await asyncio.sleep(100)
 
@@ -165,10 +168,8 @@ class ElementPdf(Element):
 async def get_elements_all(page, selector):
     html = await page.inner_html('html')
     h = etree.HTML(html)
-    l = h.xpath("//" + selector)
-    res = []
-    for i in l:
-        res.append(etree.tostring(i).decode('utf-8'))
+    l = h.xpath(f"//{selector}")
+    res = [etree.tostring(i).decode('utf-8') for i in l]
     return '\n'.join(res)
 
 
@@ -386,17 +387,17 @@ class strtoAction:
         else:
             raise Exception('Unknown action')
 
-    def get_commend(s, *args):
+    def get_commend(self, *args):
         r = ''
-        yield s[0]
-        for i in range(1, len(s)):
-            if s[i] in args:
+        yield self[0]
+        for i in range(1, len(self)):
+            if self[i] in args:
                 if r:
                     yield r
                     r = ''
             else:
                 if r:
                     r += ' '
-                r += s[i]
+                r += self[i]
         if r:
             yield r

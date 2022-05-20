@@ -117,10 +117,7 @@ class MCTS(object):
         State is modified in-place, so a copy must be provided.
         """
         node = self._root
-        while(1):
-            if node.is_leaf():
-
-                break
+        while 1 and not node.is_leaf():
             # Greedily select next move.
             action, node = node.select(self._c_puct)
             state.do_move(action)
@@ -162,7 +159,7 @@ class MCTS(object):
 
         Return: the selected action
         """
-        for n in range(self._n_playout):
+        for _ in range(self._n_playout):
             state_copy = copy.deepcopy(state)
             self._playout(state_copy)
         return max(self._root._children.items(),
@@ -203,4 +200,4 @@ class MCTSPlayer(object):
             print("WARNING: the board is full")
 
     def __str__(self):
-        return "MCTS {}".format(self.player)
+        return f"MCTS {self.player}"

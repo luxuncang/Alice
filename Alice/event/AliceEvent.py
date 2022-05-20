@@ -65,18 +65,12 @@ class Alice:
     @staticmethod
     @lru_cache(maxsize=100)
     def getevent_of_classname(name: str):
-        for i in Alice.EventList():
-            if i.__name__ == name:
-                return i
-        return None
+        return next((i for i in Alice.EventList() if i.__name__ == name), None)
     
     @staticmethod
     @lru_cache(maxsize=100)
     def getevent_of_evnetname(name: str):
-        for i in Alice.EventList():
-            if i.__eventname__ == name:
-                return i
-        return None
+        return next((i for i in Alice.EventList() if i.__eventname__ == name), None)
 
     @classmethod
     def EventList(cls):
@@ -136,10 +130,18 @@ class HelpEvent(AliceEvent, AsyncAdapterEvent):
             ):
             context.event = None
             loction = relation.location(context)
-            for i in loction:
-                if message.event in [i.__eventname__ for i in map(Alice.getevent_of_classname, i.event.iter)]:
-                    return Alice.getevent_of_evnetname(message.event).__help__
-            return f'未查询到 "{message.event}" 帮助!'
+            return next(
+                (
+                    Alice.getevent_of_evnetname(message.event).__help__
+                    for i in loction
+                    if message.event
+                    in [
+                        i.__eventname__
+                        for i in map(Alice.getevent_of_classname, i.event.iter)
+                    ]
+                ),
+                f'未查询到 "{message.event}" 帮助!',
+            )
         return [help]       
 
 class CommandEvent(AliceEvent, AsyncAdapterEvent):
@@ -461,8 +463,9 @@ class AlphaZeroEvent(AliceEvent, AsyncAdapterEvent):
                 await session.send(MessageChain.create([Plain(f"AlphaZero 已开始, 发送 `exit` 退出\n\n玩家默认执黑棋`●`\n\n{Al.get_str()}")]))
                 while True:
                     call = await session.wait()
-                    back = Al.ai(*[int(n) for n in call.parserults.re.split()][::-1])
-                    if back:
+                    if back := Al.ai(
+                        *[int(n) for n in call.parserults.re.split()][::-1]
+                    ):
                         await session.send(MessageChain.create([Plain(back)]))
                     else:
                         await session.send(MessageChain.create([Plain('AlphaZero 落子错误')]))
@@ -545,16 +548,21 @@ class AliceStatusWindow(AliceEvent, AsyncAdapterEvent):
                 await session.send(MessageChain.create([Plain('"史提西亚之窗" 已开启!')]))
                 while True:
                     call = await session.wait()
-                    if call:
-                        text = call.parserults.re.split('\n')
-                        if text[0] == 'system call':
-                            res = await Thread(target=exec, args=('\n'.join(text[1:]), builtins)).start()
-                        else:
-                            res = await Thread(target = eval, args = (call.parserults.re, builtins)).start()
-                        res = await Render.render(str(res))
-                        await session.send(MessageChain.create([Image(data_bytes = res)]))
-                    else:
+                    if not call:
                         break
+                    text = call.parserults.re.split('\n')
+                    res = (
+                        await Thread(
+                            target=exec, args=('\n'.join(text[1:]), builtins)
+                        ).start()
+                        if text[0] == 'system call'
+                        else await Thread(
+                            target=eval, args=(call.parserults.re, builtins)
+                        ).start()
+                    )
+
+                    res = await Render.render(str(res))
+                    await session.send(MessageChain.create([Image(data_bytes = res)]))
         return [asend]
 
     async def callback(self):
@@ -795,13 +803,25 @@ class BilibiliEvent(AliceEvent, AsyncAdapterEvent):
             async with AliceSession(AliceParse([r'([\s\S]*)']), context, EventChain, 600) as session:
                 if getattr(message, 'text'):
                     res = await bil_search(message.text)
-                    messages = [MessageChain.create(Plain(f"aid: {i[0]}\nbvid: {i[1]}\ntag: {i[3]}\nauthor: {i[4]}\ndescription: {i[5]}\nurl: {i[2]}"), Image(url = 'http:' + i[-1])) for i in res[:5]]
+                    messages = [
+                        MessageChain.create(
+                            Plain(
+                                f"aid: {i[0]}\nbvid: {i[1]}\ntag: {i[3]}\nauthor: {i[4]}\ndescription: {i[5]}\nurl: {i[2]}"
+                            ),
+                            Image(url=f'http:{i[-1]}'),
+                        )
+                        for i in res[:5]
+                    ]
+
                     forward = batch_forwardnode(app.account, messages, "Alice for B站")
                     await session.send(MessageChain.create(forward), False)
 
                 elif getattr(message, 'url'):
                     path, vid = await bil_download(message.url)
-                    await session.sendofdict({'Plain': f'上传中...', 'file': (open(path, 'rb'), f"{vid}.mp4")})
+                    await session.sendofdict(
+                        {'Plain': '上传中...', 'file': (open(path, 'rb'), f"{vid}.mp4")}
+                    )
+
                     os.remove(path)
         return [search]
 
@@ -827,17 +847,18 @@ class RetractEvent(AliceEvent, AsyncAdapterEvent):
             ):
         
             async def retract():
+                if not context.group:
+                    return
                 e = int(message.num)
                 n = 0
-                if context.group:
-                    for i in AliceSendMessage.sendid[::-1]:
-                        if n >= e:
-                            break
-                        if i[0] == context.group:
-                            await app.recallMessage(i[1])
-                            AliceSendMessage.sendid.put(i)
-                            n += 1
-                    print(list(AliceSendMessage.sendid))
+                for i in AliceSendMessage.sendid[::-1]:
+                    if n >= e:
+                        break
+                    if i[0] == context.group:
+                        await app.recallMessage(i[1])
+                        AliceSendMessage.sendid.put(i)
+                        n += 1
+                print(list(AliceSendMessage.sendid))
             return [retract]
     
         async def callback(self):

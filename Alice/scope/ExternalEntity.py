@@ -20,7 +20,10 @@ class MiraiBot(Ordinary):
         super().__init__(name, subiter, reference = True)
 
     def add(self, *identification: Iterable[Any]) -> None:
-        ModelCore.create_alice(self.__class__.__name__, self.name, [i for i in identification])
+        ModelCore.create_alice(
+            self.__class__.__name__, self.name, list(identification)
+        )
+
         return super().add(*identification)
 
     def remove(self, *identification: Iterable[Any]) -> None:
@@ -73,30 +76,28 @@ class AliceBuiltins(dict):
 class AliceRelationship(BaseMapperEvent):
     
     def __init__(self, name: str, region: Ordinary, contact: List[BaseContext]):
-        res = []
-        for i in ModelCore.create_relation(name, contact):
-            res.append(
-                Context(
-                    name = i['name'],
-                    bot = getattr(GraiaBot, i['bot']),
-                    group = getattr(GraiaGroup, i['group']) if i['group'] else None,
-                    user = getattr(GraiaUser, i['user']),
-                    event = getattr(GraiaEvent, i['event']),
-                    direction = i['direction'],
-                    relationship = AliceRelation(
-                        frequency = (i['relationship'][0][0], i['relationship'][0][1]), 
-                        delayed = i['relationship'][1]
-                    )
-                )
+        res = [
+            Context(
+                name=i['name'],
+                bot=getattr(GraiaBot, i['bot']),
+                group=getattr(GraiaGroup, i['group']) if i['group'] else None,
+                user=getattr(GraiaUser, i['user']),
+                event=getattr(GraiaEvent, i['event']),
+                direction=i['direction'],
+                relationship=AliceRelation(
+                    frequency=(i['relationship'][0][0], i['relationship'][0][1]),
+                    delayed=i['relationship'][1],
+                ),
             )
+            for i in ModelCore.create_relation(name, contact)
+        ]
+
         super().__init__(name, region, res)
         setattr(AliceRelationship, name, self)
         [setattr(self, i.name, i) for i in res]
 
     def structure(self):
-        res = {}
-        for i in self.iter:
-            res[i.name] = {}
-            for k,v in i.filterNone.items():
-                res[i.name][k] = list(v)
-        return res
+        return {
+            i.name: {k: list(v) for k, v in i.filterNone.items()}
+            for i in self.iter
+        }

@@ -51,8 +51,7 @@ class ParamikoClient:
 
     def channel_recv(self):
         while True:
-            text = self.channel.recv(1024)
-            if text:
+            if text := self.channel.recv(1024):
                 self.queue += text.decode().split('\n')
     
     async def cmd(self, text: str):

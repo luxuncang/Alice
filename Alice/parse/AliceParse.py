@@ -25,10 +25,7 @@ class RegexMatch(Match):
         self.pattern = pattern
         
     def match(self, text: str) -> Iterable[str]:
-        res = re.findall(self.pattern, text)
-        if res:
-            return res[0]
-        return None
+        return res[0] if (res := re.findall(self.pattern, text)) else None
 
 class ElementMatch(Match):
     '''元素匹配'''
@@ -39,8 +36,7 @@ class ElementMatch(Match):
     def match(self, message: Any) -> Iterable[str]:
         res = []
         for p in self.pattern:
-            r = message[p]
-            if r:
+            if r := message[p]:
                 res+=r
             else:
                 return None
@@ -54,9 +50,7 @@ class FullMatch(Match):
         self.type = type
 
     def match(self, message: Any) -> Any:
-        if self.pattern == message:
-            return message
-        return None
+        return message if self.pattern == message else None
 
 class ArgumentMatch(Match):
     '''参数匹配'''
@@ -81,8 +75,7 @@ class ParseMatch(Match):
         self.pattern = compile(pattern)
     
     def match(self, message: str) -> Iterable[str]:
-        res = self.pattern.parse(message)
-        if res:
+        if res := self.pattern.parse(message):
             return res 
 
 class FireMatch(Match):
@@ -92,8 +85,7 @@ class FireMatch(Match):
         self.f = self.generat_func(signature)
 
     def match(self, message: str):
-        res = typefire(self.f)(message)
-        if res:
+        if res := typefire(self.f)(message):
             return res
         
     def generat_func(self, signature: dict):
@@ -102,7 +94,7 @@ class FireMatch(Match):
             if len(v) <= 1:
                 v = (..., ...)
             h = ''
-            if v[0] == ... or v[0] == None:
+            if v[0] == ... or v[0] is None:
                 ...
             else:
                 h += f': {v[0] if isinstance(v[0], str) else v[0].__name__}'
@@ -166,7 +158,7 @@ class ParseRusult:
     def get_dict(self):
         data = {}
         for i in self.ParseMatch:
-            data.update(i.named)
+            data |= i.named
         return {
             'cmd': self.cmd,
             'lat': self.lat,
@@ -181,9 +173,8 @@ class ParseRusult:
 
     @staticmethod
     def _reduction(parse_result):
-        if isinstance(parse_result, list):
-            if len(parse_result) == 1:
-                return parse_result[0]
+        if isinstance(parse_result, list) and len(parse_result) == 1:
+            return parse_result[0]
         return parse_result
 
 
@@ -207,23 +198,20 @@ class AliceParse(Match):
         self.result = ParseRusult()
         try:
             for cmd in self.command:
-                res = cmd.match(self.distribution(cmd, message))
-                if res:
+                if res := cmd.match(self.distribution(cmd, message)):
                     self.result.command.append(res)
                     getattr(self.result, cmd.__class__.__name__).append(res)
                 else:
                     raise ParseException()
-                    
+
             for least in self.least:
-                res = self.leastmatch(least, message)
-                if res:
+                if res := self.leastmatch(least, message):
                     self.result.least += res
                 else:
                     raise ParseException()
-            
+
             for option in self.options:
-                res = option.match(self.distribution(option, message))
-                if res:
+                if res := option.match(self.distribution(option, message)):
                     self.result.options.append(res)
                     getattr(self.result, option.__class__.__name__).append(res)
 
@@ -244,15 +232,12 @@ class AliceParse(Match):
     
     @staticmethod
     def strtoregex(pattern: Union[str, Match]) -> str:
-        if isinstance(pattern, str):
-            return RegexMatch(pattern)
-        return pattern
+        return RegexMatch(pattern) if isinstance(pattern, str) else pattern
     
     def leastmatch(self, least: Tuple[Iterable[Union[str, Match]], int], message: MessageChain) -> bool:
         result = []
         for i in least[0]:
-            res = i.match(AliceParse.distribution(i, message))
-            if res:
+            if res := i.match(AliceParse.distribution(i, message)):
                 getattr(self.result, i.__class__.__name__).append(res)
                 result.append(res)
         if len(result) >= least[1]:

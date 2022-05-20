@@ -78,9 +78,7 @@ class AliceSendMessage:
         安全消息
         '''
         m = message.get(Plain)
-        text = ''
-        for i in m:
-            text += i.text
+        text = ''.join(i.text for i in m)
         if len(text) >= 5000:
             message = message.exclude(Plain)
             message.append(Image(data_bytes = await Render.render(text)))
@@ -104,10 +102,7 @@ class AliceSession:
         self.eventchain = EventChain
         self.call = EventChain
         self.timeout = timeout
-        if loop:
-            self.loop = loop
-        else:
-            self.loop = asyncio.get_event_loop()
+        self.loop = loop or asyncio.get_event_loop()
         self.app: GraiaMiraiApplication = self.call.gettype(GraiaMiraiApplication)
         self.ons = []
         self.exit = exit
@@ -120,11 +115,9 @@ class AliceSession:
 
     async def match(self, context: AliceEventChain) -> bool:
         if self.ChaintoContext(context):
-            eres = self.exit.match(context.gettype(MessageChain))
-            if eres:
+            if eres := self.exit.match(context.gettype(MessageChain)):
                 return AliceSessionStop
-            res = self.parse.match(context.gettype(MessageChain))
-            if res:
+            if res := self.parse.match(context.gettype(MessageChain)):
                 return res
         return False
 
@@ -255,8 +248,7 @@ class Permissions:
     def read(cls, obj, name):
         if isinstance(obj, str):
             return obj
-        ob = getattr(obj, name, None)
-        if ob:
+        if ob := getattr(obj, name, None):
             return '\n'.join(list(ob))
         return f"{name} 不在 {obj} 中!"
 
@@ -264,8 +256,7 @@ class Permissions:
     def add(cls, obj, name):
         if isinstance(obj, str):
             return obj
-        ob = getattr(obj, name, None)
-        if ob:
+        if ob := getattr(obj, name, None):
             return f'{name} 在 {obj} 已经存在!'
         obj(name, [])
         return f'{name} 在 {obj} 增加成功!'
@@ -274,8 +265,7 @@ class Permissions:
     def remove(cls, obj, name):
         if isinstance(obj, str):
             return obj
-        ob = getattr(obj, name, None)
-        if ob:
+        if ob := getattr(obj, name, None):
             delattr(obj, name)
             return f'{name} 在 {obj} 删除成功!'
         return f'{name} 在 {obj} 不存在!'

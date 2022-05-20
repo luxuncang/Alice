@@ -150,8 +150,7 @@ class PolicyValueNet():
         #return loss.item(), entropy.item()
 
     def get_policy_param(self):
-        net_params = self.policy_value_net.state_dict()
-        return net_params
+        return self.policy_value_net.state_dict()
 
     def save_model(self, model_file):
         """ save model params to file """

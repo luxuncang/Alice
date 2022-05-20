@@ -99,37 +99,41 @@ class ModelCore:
     @classmethod
     def create_label(cls, label: str, name: str, ls: List[Union[Bot, User, Group, Event]], session: Session) -> None:
         if label == "GraiaBot":
-            lb = session.query(Botlabel).where(Botlabel.name == name).first()
-            if lb:
+            if lb := session.query(Botlabel).where(Botlabel.name == name).first():
                 lb.bots = ls + lb.bots
-                # session.add(lb)
             else:
                 res = Botlabel(name=name, bots = ls)
                 session.add(res)
         elif label == "GraiaUser":
-            lb = session.query(Userlabel).where(Userlabel.name == name).first()
-            if lb:
+            if (
+                lb := session.query(Userlabel)
+                .where(Userlabel.name == name)
+                .first()
+            ):
                 lb.users = ls + lb.users
-                # session.add(lb)
             else:
                 res = Userlabel(name=name, users=ls)
                 session.add(res)
         elif label == "GraiaGroup":
-            lb = session.query(Grouplabel).where(Grouplabel.name == name).first()
-            if lb:
+            if (
+                lb := session.query(Grouplabel)
+                .where(Grouplabel.name == name)
+                .first()
+            ):
                 lb.groups = ls + lb.groups
-                # session.add(lb)
             else:
                 res = Grouplabel(name=name, groups=ls)
                 session.add(res)
         elif label == "GraiaEvent":
-            lb = session.query(Eventlabel).where(Eventlabel.name == name).first()
-            if lb:
+            if (
+                lb := session.query(Eventlabel)
+                .where(Eventlabel.name == name)
+                .first()
+            ):
                 lb.events = ls + lb.events
-                # session.add(lb)
             else:
                 res = Eventlabel(name=name, events=ls)
-                session.add(res)    
+                session.add(res)
         else:
             raise Exception("label error")
         session.flush()
@@ -138,26 +142,22 @@ class ModelCore:
     @classmethod
     def create_graia(cls, label: str, name: Union[str, int], session: Session):
         if label == "GraiaBot":
-            bot = session.query(Bot).where(Bot.id == int(name)).first()
-            if bot:
+            if bot := session.query(Bot).where(Bot.id == int(name)).first():
                 return bot
             else:
                 res = Bot(id = int(name))
         elif label == "GraiaGroup":
-            group = session.query(Group).where(Group.id == int(name)).first()
-            if group:
+            if group := session.query(Group).where(Group.id == int(name)).first():
                 return group
             else:
                 res = Group(id = int(name))
         elif label == "GraiaUser":
-            user = session.query(User).where(User.id == int(name)).first()
-            if user:
+            if user := session.query(User).where(User.id == int(name)).first():
                 return user
             else:
                 res = User(id = int(name))
         elif label == "GraiaEvent":
-            event = session.query(Event).where(Event.name == name).first()
-            if event:
+            if event := session.query(Event).where(Event.name == name).first():
                 return event
             else:
                 res = Event(name = name)
@@ -173,37 +173,45 @@ class ModelCore:
     async def add_graia(cls, label: str, name: str, ls: List[Union[Bot, User, Group, Event]]):
         async with AsyncSession(cls.async_engine) as session:
             if label == "GraiaBot":
-                lb = session.query(Botlabel).where(Botlabel.name == name).first()
-                if lb:
+                if (
+                    lb := session.query(Botlabel)
+                    .where(Botlabel.name == name)
+                    .first()
+                ):
                     lb.bots = ls + lb.bots
-                    # session.add(lb)
                 else:
                     res = Botlabel(name=name, bots = ls)
                     session.add(res)
             elif label == "GraiaUser":
-                lb = session.query(Userlabel).where(Userlabel.name == name).first()
-                if lb:
+                if (
+                    lb := session.query(Userlabel)
+                    .where(Userlabel.name == name)
+                    .first()
+                ):
                     lb.users = ls + lb.users
-                    # session.add(lb)
                 else:
                     res = Userlabel(name=name, users=ls)
                     session.add(res)
             elif label == "GraiaGroup":
-                lb = session.query(Grouplabel).where(Grouplabel.name == name).first()
-                if lb:
+                if (
+                    lb := session.query(Grouplabel)
+                    .where(Grouplabel.name == name)
+                    .first()
+                ):
                     lb.groups = ls + lb.groups
-                    # session.add(lb)
                 else:
                     res = Grouplabel(name=name, groups=ls)
                     session.add(res)
             elif label == "GraiaEvent":
-                lb = session.query(Eventlabel).where(Eventlabel.name == name).first()
-                if lb:
+                if (
+                    lb := session.query(Eventlabel)
+                    .where(Eventlabel.name == name)
+                    .first()
+                ):
                     lb.events = ls + lb.events
-                    # session.add(lb)
                 else:
                     res = Eventlabel(name=name, events=ls)
-                    session.add(res)    
+                    session.add(res)
             else:
                 raise Exception("label error")
             session.flush()
@@ -266,29 +274,51 @@ class ModelCore:
     def query_label(cls, label: str, name: str):
         with Session(cls.engine) as session:
             if label == "GraiaBot":
-                res = session.query(Botlabel,).where(Botlabel.name == name).first()
-                if res:
-                    return [str(i.id) for i in res.bots]
-                else:
-                    return []
-            elif label == "GraiaGroup":
-                res = session.query(Grouplabel).where(Grouplabel.name == name).first()
-                if res:
-                    return [str(i.id) for i in res.groups]
-                else:
-                    return []
-            elif label == "GraiaUser":
-                res = session.query(Userlabel).where(Userlabel.name == name).first()
-                if res:
-                    return [str(i.id) for i in res.users]
-                else:
-                    return []
+                return (
+                    [str(i.id) for i in res.bots]
+                    if (
+                        res := session.query(
+                            Botlabel,
+                        )
+                        .where(Botlabel.name == name)
+                        .first()
+                    )
+                    else []
+                )
+
             elif label == "GraiaEvent":
-                res = session.query(Eventlabel).where(Eventlabel.name == name).first()
-                if res:
-                    return [i.name for i in res.events]
-                else:
-                    return []
+                return (
+                    [i.name for i in res.events]
+                    if (
+                        res := session.query(Eventlabel)
+                        .where(Eventlabel.name == name)
+                        .first()
+                    )
+                    else []
+                )
+
+            elif label == "GraiaGroup":
+                return (
+                    [str(i.id) for i in res.groups]
+                    if (
+                        res := session.query(Grouplabel)
+                        .where(Grouplabel.name == name)
+                        .first()
+                    )
+                    else []
+                )
+
+            elif label == "GraiaUser":
+                return (
+                    [str(i.id) for i in res.users]
+                    if (
+                        res := session.query(Userlabel)
+                        .where(Userlabel.name == name)
+                        .first()
+                    )
+                    else []
+                )
+
             else:
                 raise Exception("label is not defined")
 
@@ -311,27 +341,38 @@ class ModelCore:
             if res:
                 res.contexts = [cls.create_context(i, session) for i in context]
                 session.flush()
-                session.commit()
             else:
                 res = Relation(name=name, contexts=[cls.create_context(i, session) for i in context])
                 session.add(res)
-                session.commit()
-
+            session.commit()
             session.refresh(res)
             results = []
             for i in res.contexts:
-                result = {}
-                result.update({
-                    'name': i.name, 
-                    'direction': bool(i.direction), 
-                    'relationship':((i.frequency_n, i.frequency_t), i.delayed)
-                    })
-                result.update({
-                    'bot': session.query(Botlabel).where(Botlabel.id == i.botlabel_id).first().name,
-                    'group': session.query(Grouplabel).where(Grouplabel.id == i.grouplabel_id).first().name if i.grouplabel_id else None,
-                    'user': session.query(Userlabel).where(Userlabel.id == i.userlabel_id).first().name,
-                    'event': session.query(Eventlabel).where(Eventlabel.id == i.eventlabel_id).first().name
-                })
+                result = {
+                    'name': i.name,
+                    'direction': bool(i.direction),
+                    'relationship': ((i.frequency_n, i.frequency_t), i.delayed),
+                } | {
+                    'bot': session.query(Botlabel)
+                    .where(Botlabel.id == i.botlabel_id)
+                    .first()
+                    .name,
+                    'group': session.query(Grouplabel)
+                    .where(Grouplabel.id == i.grouplabel_id)
+                    .first()
+                    .name
+                    if i.grouplabel_id
+                    else None,
+                    'user': session.query(Userlabel)
+                    .where(Userlabel.id == i.userlabel_id)
+                    .first()
+                    .name,
+                    'event': session.query(Eventlabel)
+                    .where(Eventlabel.id == i.eventlabel_id)
+                    .first()
+                    .name,
+                }
+
                 results.append(result)
             return results
 
@@ -357,8 +398,6 @@ class ModelCore:
             res.delayed = context.relationship.delayed
             res.direction = context.direction
             session.flush()
-            session.commit()
-            return res
         else:
             res = Context(
                 name = context.name,
@@ -372,14 +411,18 @@ class ModelCore:
                 direction = context.direction,
                 )
             session.add(res)
-            session.commit()
-            return res
+
+        session.commit()
+        return res
 
     @classmethod
     def query_context(cls, context):
         with Session(cls.engine) as session:
-            res = session.query(Context).where(Context.name == context.name).first()
-            if res:
+            if (
+                res := session.query(Context)
+                .where(Context.name == context.name)
+                .first()
+            ):
                 return res
             else:
                 return None
@@ -387,8 +430,7 @@ class ModelCore:
     @classmethod
     def query_relation(cls, name: str):
         with Session(cls.engine) as session:
-            res = session.query(Relation).where(Relation.name == name).first()
-            if res:
+            if res := session.query(Relation).where(Relation.name == name).first():
                 return res
             else:
                 return None

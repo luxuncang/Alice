@@ -37,15 +37,14 @@ def loop_task(loop = None):
         def wrapper(*args, **kwargs):
             if not loop:
                 loops = asyncio.get_event_loop()
-                task = loops.create_task(func(*args, **kwargs))
-                return task
+                return loops.create_task(func(*args, **kwargs))
             return loop.create_task(func(*args, **kwargs))
         return wrapper
     return task
 
 # 递归调用
 def recursion(func, args, n = 1):
-    for i in range(n):
+    for _ in range(n):
         args = func(args)
     return args
 
@@ -54,5 +53,4 @@ def get_exec(code: str):
     f = StringIO()
     with redirect_stdout(f), redirect_stderr(f):
         exec(code)
-    s = f.getvalue()
-    return s
+    return f.getvalue()

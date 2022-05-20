@@ -1,10 +1,6 @@
 table = 'fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF'
 
-tr = {}
-
-for i in range(58):
-
-    tr[table[i]] = i
+tr = {table[i]: i for i in range(58)}
 
 s = [11, 10, 3, 8, 4, 6, 2, 9, 5, 7]
 
@@ -16,11 +12,7 @@ add = 100618342136696320
 
 def Decode(x):
 
-    r = 0
-
-    for i in range(10):
-
-        r += tr[x[s[i]]] * 58 ** i
+    r = sum(tr[x[s[i]]] * 58 ** i for i in range(10))
 
     return (r - add) ^ xor
 

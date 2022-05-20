@@ -51,7 +51,7 @@ class Human(object):
         return move
 
     def __str__(self):
-        return "Human {}".format(self.player)
+        return f"Human {self.player}"
 
 
 def run():

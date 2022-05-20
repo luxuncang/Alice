@@ -23,8 +23,7 @@ class Board(object):
 
     def init_board(self, start_player=0):
         if self.width < self.n_in_row or self.height < self.n_in_row:
-            raise Exception('board width and height can not be '
-                            'less than {}'.format(self.n_in_row))
+            raise Exception(f'board width and height can not be less than {self.n_in_row}')
         self.current_player = self.players[start_player]  # start player
         # keep available moves in a list
         self.availables = list(range(self.width * self.height))
@@ -98,20 +97,45 @@ class Board(object):
             w = m % width
             player = states[m]
 
-            if (w in range(width - n + 1) and
-                    len(set(states.get(i, -1) for i in range(m, m + n))) == 1):
+            if (
+                w in range(width - n + 1)
+                and len({states.get(i, -1) for i in range(m, m + n)}) == 1
+            ):
                 return True, player
 
-            if (h in range(height - n + 1) and
-                    len(set(states.get(i, -1) for i in range(m, m + n * width, width))) == 1):
+            if (
+                h in range(height - n + 1)
+                and len(
+                    {states.get(i, -1) for i in range(m, m + n * width, width)}
+                )
+                == 1
+            ):
                 return True, player
 
-            if (w in range(width - n + 1) and h in range(height - n + 1) and
-                    len(set(states.get(i, -1) for i in range(m, m + n * (width + 1), width + 1))) == 1):
+            if (
+                w in range(width - n + 1)
+                and h in range(height - n + 1)
+                and len(
+                    {
+                        states.get(i, -1)
+                        for i in range(m, m + n * (width + 1), width + 1)
+                    }
+                )
+                == 1
+            ):
                 return True, player
 
-            if (w in range(n - 1, width) and h in range(height - n + 1) and
-                    len(set(states.get(i, -1) for i in range(m, m + n * (width - 1), width - 1))) == 1):
+            if (
+                w in range(n - 1, width)
+                and h in range(height - n + 1)
+                and len(
+                    {
+                        states.get(i, -1)
+                        for i in range(m, m + n * (width - 1), width - 1)
+                    }
+                )
+                == 1
+            ):
                 return True, player
 
         return False, -1
@@ -212,7 +236,7 @@ class Game(object):
             if is_shown:
                 if winner != -1:
                     print("Game end. Winner is", self.players[winner])
-                    return "Game end. Winner is " + self.players[winner]
+                    return f"Game end. Winner is {self.players[winner]}"
                 else:
                     print("Game end. Tie")
                     return "Game end. Tie"

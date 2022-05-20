@@ -18,8 +18,7 @@ def softmax(x):
 
 
 def relu(X):
-    out = np.maximum(X, 0)
-    return out
+    return np.maximum(X, 0)
 
 
 def conv_forward(X, W, b, stride=1, padding=1):
@@ -41,8 +40,7 @@ def conv_forward(X, W, b, stride=1, padding=1):
 
 
 def fc_forward(X, W, b):
-    out = np.dot(X, W) + b
-    return out
+    return np.dot(X, W) + b
 
 
 def get_im2col_indices(x_shape, field_height,

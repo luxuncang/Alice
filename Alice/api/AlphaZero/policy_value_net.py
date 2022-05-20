@@ -111,9 +111,9 @@ class PolicyValueNet():
             )
 
     def get_policy_param(self):
-        net_params = lasagne.layers.get_all_param_values(
-                [self.policy_net, self.value_net])
-        return net_params
+        return lasagne.layers.get_all_param_values(
+            [self.policy_net, self.value_net]
+        )
 
     def save_model(self, model_file):
         """ save model params to file """

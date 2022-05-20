@@ -127,14 +127,15 @@ class GithubParse:
     def res_text(res, parse, obj):
         if isinstance(res, Callable):
             if len(parse) == 0:
-                if res.__name__ == 'get_contents':
-                    res = res("")
-                else:
-                    res = res()
+                res = res("") if res.__name__ == 'get_contents' else res()
             else:
                 if res.__name__ == 'get_archive_link' and parse[0] == '-D':
                     url = res("zipball")
-                    return {'file': (requests.get(url).content, f'{obj.name}.zip'), 'Plain': f'上传中...'}
+                    return {
+                        'file': (requests.get(url).content, f'{obj.name}.zip'),
+                        'Plain': '上传中...',
+                    }
+
                 res = res(*parse)
         if isinstance(res, str):
             return {'Plain': '\n'.join([i.strip() for i in res.splitlines()])}
