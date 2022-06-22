@@ -26,7 +26,7 @@ iterwrapper==0.1.4
 loguru==0.5.3
 lxml==4.7.1
 multidict==5.2.0
-numpy==1.21.5
+numpy==1.22.0
 paramiko==2.10.1
 parse==1.19.0
 playwright
